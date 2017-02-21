@@ -1,4 +1,4 @@
-export 
+export
     DatasetCollector,
     ParallelDatasetCollector,
     reset!,
@@ -24,9 +24,9 @@ type DatasetCollector
     id::Int
     function DatasetCollector(seeds::Vector{Int64}, roadway_gen::RoadwayGenerator,
             scene_gen::SceneGenerator, behavior_gen::BehaviorGenerator,
-            eval::Evaluator, dataset::Dataset, scene::Scene, 
+            eval::Evaluator, dataset::Dataset, scene::Scene,
             models::Dict{Int, DriverModel}, roadway::Roadway; id::Int = 0)
-        return new(seeds, roadway_gen, scene_gen, behavior_gen, eval, dataset, 
+        return new(seeds, roadway_gen, scene_gen, behavior_gen, eval, dataset,
             scene, models, roadway, id)
     end
 end
@@ -64,7 +64,7 @@ end
 
 """
 # Description:
-    - ParallelDatasetCollector orchestrates the parallel generation 
+    - ParallelDatasetCollector orchestrates the parallel generation
         of a dataset.
 """
 type ParallelDatasetCollector
@@ -73,12 +73,12 @@ type ParallelDatasetCollector
 
     """
     # Args:
-        - cols: a vector of dataset collectors 
+        - cols: a vector of dataset collectors
         - seeds: the seeds for which states should be generated and simulated.
             note that these are partitioned in the constructor
         - output_filepath: filepath for the final dataset
     """
-    function ParallelDatasetCollector(cols::Vector{DatasetCollector}, 
+    function ParallelDatasetCollector(cols::Vector{DatasetCollector},
             seeds::Vector{Int64}, output_filepath::String)
         seedsets = ordered_partition(seeds, length(cols))
         for (col, seeds) in zip(cols, seedsets)

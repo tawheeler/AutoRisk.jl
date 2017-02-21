@@ -1,4 +1,4 @@
-export 
+export
     DelayedDriver,
     get_name,
     action_context
@@ -8,8 +8,8 @@ export
     pdf,
     logpdf
 
-import AutomotiveDrivingModels: 
-    LongitudinalDriverModel, 
+import AutomotiveDrivingModels:
+    LongitudinalDriverModel,
     get_name,
     action_context
     set_desired_speed!,

@@ -1,16 +1,16 @@
-export 
+export
     RoadwayGenerator,
     StaticRoadwayGenerator,
     reset!
 
 """
-# Description: 
+# Description:
     - RoadwayGenerator is the abstract type underlying the roadway generators.
 """
 abstract RoadwayGenerator
 
-reset!(gen::RoadwayGenerator, roadway::Roadway, seed::Int64) = error(
-    "reset! not implemented for $(scene_generator)")
+Base.rand(gen::RoadwayGenerator) = error("rand not implemented for $(typeof(scene_generator))")
+Base.srand(gen::RoadwayGenerator, seed) = error("srand not implemented for $(typeof(scene_generator)) and $(typeof(seed))")
 
 """
 # Description:
@@ -20,5 +20,5 @@ type StaticRoadwayGenerator <: RoadwayGenerator
     roadway::Roadway
 end
 
-reset!(gen::StaticRoadwayGenerator, roadway::Roadway, seed::Int64) = gen.roadway
-reset!(gen::StaticRoadwayGenerator, seed::Int64) = gen.roadway
+Base.rand(gen::StaticRoadwayGenerator) = gen.roadway
+Base.srand(gen::StaticRoadwayGenerator, seed) = gen

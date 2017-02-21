@@ -11,8 +11,8 @@ function test_build_driver()
     σ = 0.
     k_spd = 1.
     δ = 2.
-    T = 3. 
-    v_des = 4. 
+    T = 3.
+    v_des = 4.
     s_min = 5.
     a_max = 6.
     d_cmf = 7.
@@ -37,7 +37,7 @@ function test_build_driver()
     @test driver.mlane.politeness == politeness
     @test driver.mlane.advantage_threshold == advantage_threshold
     @test driver.mlane.safe_decel == safe_decel
-    @test driver.mlat.kp == kp 
+    @test driver.mlat.kp == kp
     @test driver.mlat.kd == kd
 end
 

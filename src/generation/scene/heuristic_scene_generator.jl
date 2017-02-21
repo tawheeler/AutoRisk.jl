@@ -1,4 +1,4 @@
-export 
+export
     HeuristicSceneGenerator,
     generate_init_road_idxs,
     is_valid_position,
@@ -9,9 +9,9 @@ export
 
 """
 # Description:
-    - HeuristicSceneGenerator generates scenes based on heursitics - i.e., it 
-        just uses rules that align with expectation, but that do not reflect 
-        any learned model, for example. 
+    - HeuristicSceneGenerator generates scenes based on heursitics - i.e., it
+        just uses rules that align with expectation, but that do not reflect
+        any learned model, for example.
 """
 type HeuristicSceneGenerator <: SceneGenerator
     min_num_vehicles::Int64
@@ -27,21 +27,21 @@ type HeuristicSceneGenerator <: SceneGenerator
     max_vehicle_width::Float64
 
     min_init_dist::Float64
-    
+
     # optional
     max_init_dist::Float64
     rng::MersenneTwister
     total_roadway_length::Float64
 
-    function HeuristicSceneGenerator(min_num_vehicles, max_num_vehicles, 
-            min_base_speed, max_base_speed, min_vehicle_length, 
-            max_vehicle_length, min_vehicle_width,  max_vehicle_width, 
+    function HeuristicSceneGenerator(min_num_vehicles, max_num_vehicles,
+            min_base_speed, max_base_speed, min_vehicle_length,
+            max_vehicle_length, min_vehicle_width,  max_vehicle_width,
             min_init_dist,  max_init_dist = 0, rng = MersenneTwister(1),
             total_roadway_length = 0)
-        return new(min_num_vehicles, max_num_vehicles, 
-            min_base_speed, max_base_speed, min_vehicle_length, 
-            max_vehicle_length, min_vehicle_width,  max_vehicle_width, 
-            min_init_dist,  max_init_dist, rng, 
+        return new(min_num_vehicles, max_num_vehicles,
+            min_base_speed, max_base_speed, min_vehicle_length,
+            max_vehicle_length, min_vehicle_width,  max_vehicle_width,
+            min_init_dist,  max_init_dist, rng,
             total_roadway_length)
     end
 end
@@ -58,7 +58,7 @@ end
 # Returns:
     - vector of road indices
 """
-function generate_init_road_idxs(gen::HeuristicSceneGenerator, 
+function generate_init_road_idxs(gen::HeuristicSceneGenerator,
         roadway::Roadway, num_vehicles::Int64)
     init_road_idxs = Vector{RoadIndex}(num_vehicles)
 
@@ -99,7 +99,7 @@ end
 # Returns:
     - whether or not the position is valid
 """
-function is_valid_position(gen::HeuristicSceneGenerator, pos::Float64, 
+function is_valid_position(gen::HeuristicSceneGenerator, pos::Float64,
         positions::Vector{Float64}, lanes::Vector{Int64})
     valid = true
     cur_idx = length(positions) + 1
@@ -124,7 +124,7 @@ function is_valid_position(gen::HeuristicSceneGenerator, pos::Float64,
     return valid
 end
 
-function permits_valid_positions(gen::HeuristicSceneGenerator, 
+function permits_valid_positions(gen::HeuristicSceneGenerator,
         lanes::Vector{Int64})
     # check whether a valid set of positions is possible
     counts = Dict()
@@ -154,7 +154,7 @@ end
 # Returns:
     - positions
 """
-function generate_road_positions(gen::HeuristicSceneGenerator, 
+function generate_road_positions(gen::HeuristicSceneGenerator,
         lanes::Vector{Int64}, roadway_type::String = "stadium")
     # check if valid placement possible
     if !permits_valid_positions(gen, lanes)
@@ -214,13 +214,13 @@ end
 # Returns:
     - a vehicle
 """
-function build_vehicle(gen::HeuristicSceneGenerator, roadway::Roadway, 
+function build_vehicle(gen::HeuristicSceneGenerator, roadway::Roadway,
         road_idx::RoadIndex, road_pos::Float64, veh_id::Int64)
 
     # build and move vehicle state
     base_speed = gen.min_base_speed + rand(gen.rng) * (
         gen.max_base_speed - gen.min_base_speed)
-    veh_state = VehicleState(Frenet(road_idx, roadway), 
+    veh_state = VehicleState(Frenet(road_idx, roadway),
         roadway, base_speed)
     veh_state = move_along(veh_state, roadway, road_pos)
 
@@ -245,10 +245,7 @@ end
     - roadway: on which to place vehicles
     - seed: random seed to use for generation
 """
-function reset!(gen::HeuristicSceneGenerator, scene::Scene, 
-        roadway::Roadway, seed::Int64) 
-    # set random seed
-    srand(gen.rng, seed)
+function Base.rand!(scene::Scene, gen::HeuristicSceneGenerator, roadway::Roadway)
 
     # heuristic generator assumes stadium roadway
     gen.total_roadway_length = get_total_roadway_length(roadway)
@@ -271,6 +268,13 @@ function reset!(gen::HeuristicSceneGenerator, scene::Scene,
     # add vehicles to scene
     for (idx, (road_idx, road_pos)) in enumerate(
             zip(init_road_idxs, road_positions))
-        push!(scene, build_vehicle(gen, roadway, road_idx, road_pos, idx)) 
+        push!(scene, build_vehicle(gen, roadway, road_idx, road_pos, idx))
     end
+
+    return scene
+end
+
+function Base.srand(gen::HeuristicSceneGenerator, seed)
+    srand(gen.rng, seed)
+    return gen
 end

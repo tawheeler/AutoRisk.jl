@@ -39,7 +39,7 @@ end
 
 function stadium_roadway_area(roadway::Roadway)
     seg = roadway.segments[1]
-    
+
     # area of straight components
     slength = seg.lanes[1].curve[1].pos.x
     width = seg.lanes[1].width
@@ -49,7 +49,7 @@ function stadium_roadway_area(roadway::Roadway)
     # area of curves
     inner_radius = seg.lanes[1].curve[end].pos.y
     outer_radius = inner_radius + num_lanes * width
-    curve_area = pi * outer_radius^2 - pi * inner_radius^2 
+    curve_area = pi * outer_radius^2 - pi * inner_radius^2
 
     return straight_area + curve_area
 end
@@ -87,17 +87,17 @@ function Base.:(==)(c1::CurvePt, c2::CurvePt)
         && c1.s == c2.s
         && (c1.k == c2.k || (isnan(c1.k) && isnan(c2.k)))
         && (c1.kd == c2.kd || (isnan(c1.kd) && isnan(c2.kd))))
-end 
+end
 
 function Base.:(==)(l1::Lane, l2::Lane)
-    return (l1.tag == l2.tag 
+    return (l1.tag == l2.tag
         && all(pt1 == pt2 for (pt1, pt2) in zip(l1.curve, l2.curve))
         && l1.width == l2.width
         && l1.speed_limit == l2.speed_limit)
 end
 
 function Base.:(==)(r1::RoadSegment, r2::RoadSegment)
-    return (r1.id == r2.id 
+    return (r1.id == r2.id
         && all(l1 == l2 for (l1, l2) in zip(r1.lanes, r2.lanes)))
 end
 
@@ -107,22 +107,22 @@ end
 
 ### Vehicle
 function Base.:(==)(vd1::VehicleDef, vd2::VehicleDef)
-    return (vd1.id == vd2.id 
-            && vd1.class == vd2.class 
+    return (vd1.id == vd2.id
+            && vd1.class == vd2.class
             && vd1.length == vd2.length
             && vd1.width == vd2.width)
 end
 
 function Base.:(==)(f1::Frenet, f2::Frenet)
-    return (f1.roadind == f2.roadind 
-            && f1.s == f2.s 
-            && f1.t == f2.t 
+    return (f1.roadind == f2.roadind
+            && f1.s == f2.s
+            && f1.t == f2.t
             && f1.ϕ == f2.ϕ)
 end
 
 function Base.:(==)(vs1::VehicleState, vs2::VehicleState)
-    return (vs1.posG == vs2.posG 
-            && vs1.posF == vs2.posF 
+    return (vs1.posG == vs2.posG
+            && vs1.posF == vs2.posF
             && vs1.v == vs2.v)
 end
 
@@ -131,30 +131,30 @@ function Base.:(==)(v1::Vehicle, v2::Vehicle)
 end
 
 
-function Base.show(io::IO, vehicle::Vehicle)
-    print(io, "Vehicle Def:\n$(vehicle.def)")
-    print(io, "\nVehicle State:\n$(vehicle.state)")
-end
+# function Base.show(io::IO, vehicle::Vehicle)
+#     print(io, "Vehicle Def:\n$(vehicle.def)")
+#     print(io, "\nVehicle State:\n$(vehicle.state)")
+# end
 
-function Base.show(io::IO, def::VehicleDef)
-    print(io, "\tid: $(def.id)")
-    print(io, "\tclass: $(def.class)")
-    print(io, "\tlength: $(def.length)")
-    print(io, "\twidth: $(def.width)")
-end
+# function Base.show(io::IO, def::VehicleDef)
+#     print(io, "\tid: $(def.id)")
+#     print(io, "\tclass: $(def.class)")
+#     print(io, "\tlength: $(def.length)")
+#     print(io, "\twidth: $(def.width)")
+# end
 
-function Base.show(io::IO, state::VehicleState)
-    print(io, "\tglobal position: $(state.posG)\n")
-    print(io, "\tlane-relative position:\n$(state.posF)\n")
-    print(io, "\tvelocity: $(state.v)\n")
-end
+# function Base.show(io::IO, state::VehicleState)
+#     print(io, "\tglobal position: $(state.posG)\n")
+#     print(io, "\tlane-relative position:\n$(state.posF)\n")
+#     print(io, "\tvelocity: $(state.v)\n")
+# end
 
-function Base.show(io::IO, f::Frenet)
-    print(io, "\t\troadind: $(f.roadind)\n")
-    print(io, "\t\tdistance along lane: $(f.s)\n")
-    print(io, "\t\tlane offset: $(f.t)\n")
-    print(io, "\t\tlane-relative heading: $(f.ϕ)")
-end
+# function Base.show(io::IO, f::Frenet)
+#     print(io, "\t\troadind: $(f.roadind)\n")
+#     print(io, "\t\tdistance along lane: $(f.s)\n")
+#     print(io, "\t\tlane offset: $(f.t)\n")
+#     print(io, "\t\tlane-relative heading: $(f.ϕ)")
+# end
 
 ### Scene
 function Base.:(==)(s1::Scene, s2::Scene)
@@ -185,8 +185,8 @@ Description:
 
 Args:
     - rec: scene record to partially empty
-    - pastframe: nonpositive interger indicating the frame in the past after 
-        which frames should be removed (this value begins counting after the 
+    - pastframe: nonpositive interger indicating the frame in the past after
+        which frames should be removed (this value begins counting after the
         first frame in the record).
 """
 function push_forward_records!(rec::SceneRecord, pastframe::Int)
@@ -205,7 +205,7 @@ end
 # get_neighbor_rear_along_lane in ADM.jl has a bug, and this is here to fix it
 # the bug is that when rear neighbors are on a different segment than the ego
 # vehicle, the ego will mistake its fore neighbors for its rear ones
-# the fix in this function is to not consider fore neighbors by marking 
+# the fix in this function is to not consider fore neighbors by marking
 # all the vehicles that have a negative distance and not considering them twice
 function AutomotiveDrivingModels.get_neighbor_rear_along_lane(
     scene::Scene,
@@ -309,7 +309,7 @@ function inverse_ttc_to_ttc(inv_ttc::FeatureValue; censor_hi::Float64 = 30.0)
     end
 end
 
-function changed_lanes_recently(rec::SceneRecord, roadway::Roadway, 
+function changed_lanes_recently(rec::SceneRecord, roadway::Roadway,
         vehicle_index::Int, pastframe::Int = 0; lane_change_timesteps = 10,
         lane_change_heading_threshold = .1)
     # get final information
@@ -331,7 +331,7 @@ function changed_lanes_recently(rec::SceneRecord, roadway::Roadway,
     return false
 end
 
-function get_collision_type(rec::SceneRecord, roadway::Roadway, 
+function get_collision_type(rec::SceneRecord, roadway::Roadway,
         vehicle_index::Int, pastframe::Int = 0)
     # get collision result from scene
     scene = get_scene(rec, pastframe)
@@ -342,7 +342,7 @@ function get_collision_type(rec::SceneRecord, roadway::Roadway,
     ego_idx, other_idx = collision.A, collision.B
     collision_type = 0
     if in_collision
-        # colliding vehicles 
+        # colliding vehicles
         ego = scene[ego_idx]
         other = scene[other_idx]
 
@@ -351,7 +351,7 @@ function get_collision_type(rec::SceneRecord, roadway::Roadway,
             collision_type = 1
 
         # ego vehicle further along lane then rear-end-lead
-        elseif ego.state.posF.s > other.state.posF.s 
+        elseif ego.state.posF.s > other.state.posF.s
             collision_type = 2
 
         # other vehicle further along lane then rear-end-follow
@@ -366,8 +366,8 @@ end
 
 """
 Description:
-    - Returns whether a given vehicle index executed a hard brake, as defined 
-        as decelerating at a given rate for a number of frames. The function 
+    - Returns whether a given vehicle index executed a hard brake, as defined
+        as decelerating at a given rate for a number of frames. The function
         assumes that the vehicle index does not change.
 
 Args:
@@ -381,7 +381,7 @@ Args:
 Returns:
     - boolean indicating if hard brake occurred
 """
-function executed_hard_brake(rec::SceneRecord, roadway::Roadway, 
+function executed_hard_brake(rec::SceneRecord, roadway::Roadway,
         vehicle_index::Int, pastframe::Int = 0; hard_brake_threshold = -4.,
         n_past_frames = 3)
     # check whether decelerating at suffcient rate for n_past_frames frames
@@ -401,10 +401,10 @@ end
 
 """
 Overriding IDM track_longitudinal! in order to clamp accel in negative velocity
-situations. 
+situations.
 """
 function AutomotiveDrivingModels.track_longitudinal!(
-        model::IntelligentDriverModel, scene::Scene, roadway::Roadway, 
+        model::IntelligentDriverModel, scene::Scene, roadway::Roadway,
         ego_index::Int, target_index::Int)
     veh_ego = scene[ego_index]
     v = veh_ego.state.v

@@ -202,88 +202,6 @@ function push_forward_records!(rec::SceneRecord, pastframe::Int)
     return rec
 end
 
-# get_neighbor_rear_along_lane in ADM.jl has a bug, and this is here to fix it
-# the bug is that when rear neighbors are on a different segment than the ego
-# vehicle, the ego will mistake its fore neighbors for its rear ones
-# the fix in this function is to not consider fore neighbors by marking
-# all the vehicles that have a negative distance and not considering them twice
-function AutomotiveDrivingModels.get_neighbor_rear_along_lane(
-    scene::Scene,
-    roadway::Roadway,
-    tag_start::LaneTag,
-    s_base::Float64,
-    targetpoint_primary::VehicleTargetPoint, # the reference point whose distance we want to minimize
-    targetpoint_valid::VehicleTargetPoint; # the reference point, which if distance to is positive, we include the vehicle
-    max_distance_rear::Float64 = 250.0, # max distance to search rearward [m]
-    index_to_ignore::Int=-1,
-    )
-
-    best_ind = 0
-    best_dist = max_distance_rear
-    tag_target = tag_start
-
-    ignore = Set{Int}()
-
-    dist_searched = 0.0
-    while dist_searched < max_distance_rear
-
-        lane = roadway[tag_target]
-
-        for (i,veh) in enumerate(scene)
-            if i != index_to_ignore && !in(veh.def.id, ignore)
-
-                s_adjust = NaN
-
-                if veh.state.posF.roadind.tag == tag_target
-                    s_adjust = 0.0
-
-                elseif is_between_segments_hi(veh.state.posF.roadind.ind, lane.curve) &&
-                       is_in_entrances(roadway[tag_target], veh.state.posF.roadind.tag)
-
-                    distance_between_lanes = abs(roadway[tag_target].curve[1].pos - roadway[veh.state.posF.roadind.tag].curve[end].pos)
-                    s_adjust = -(roadway[veh.state.posF.roadind.tag].curve[end].s + distance_between_lanes)
-
-                elseif is_between_segments_lo(veh.state.posF.roadind.ind) &&
-                       is_in_exits(roadway[tag_target], veh.state.posF.roadind.tag)
-
-                    distance_between_lanes = abs(roadway[tag_target].curve[end].pos - roadway[veh.state.posF.roadind.tag].curve[1].pos)
-                    s_adjust = roadway[tag_target].curve[end].s + distance_between_lanes
-                end
-
-                if !isnan(s_adjust)
-                    s_valid = veh.state.posF.s + get_targetpoint_delta(targetpoint_valid, veh) + s_adjust
-                    dist_valid = s_base - s_valid + dist_searched
-                    if dist_valid ≥ 0.0
-                        s_primary = veh.state.posF.s + get_targetpoint_delta(targetpoint_primary, veh) + s_adjust
-                        dist = s_base - s_primary + dist_searched
-                        if dist < best_dist
-                            best_dist = dist
-                            best_ind = i
-                        end
-                    else
-                        push!(ignore, veh.def.id)
-                    end
-                end
-            end
-        end
-
-        if best_ind != 0
-            break
-        end
-
-        if !has_prev(lane) ||
-           (tag_target == tag_start && dist_searched != 0.0) # exit after visiting this lane a 2nd time
-            break
-        end
-
-        dist_searched += s_base
-        s_base = lane.curve[end].s + abs(lane.curve[end].pos - prev_lane_point(lane, roadway).pos) # end of prev lane plus crossover
-        tag_target = prev_lane(lane, roadway).tag
-    end
-
-    NeighborLongitudinalResult(best_ind, best_dist)
-end
-
 ### DriverModel
 function Base.:(==)(d1::DriverModel, d2::DriverModel)
     fns = fieldnames(d1)
@@ -296,19 +214,6 @@ function Base.:(==)(a1::LatLonAccel, a2::LatLonAccel)
 end
 
 ### Features
-function inverse_ttc_to_ttc(inv_ttc::FeatureValue; censor_hi::Float64 = 30.0)
-    if inv_ttc.i == FeatureState.MISSING
-        # if the value is missing then leave at zero and set missing
-        return FeatureValue(0.0, FeatureState.MISSING)
-    elseif inv_ttc.i == FeatureState.GOOD && inv_ttc.v == 0.0
-        # if the car in front is pulling away, then set to a censored hi value
-        return FeatureValue(censor_hi, FeatureState.CENSORED_HI)
-    else
-        # even if the value was censored hi, can still take the inverse
-        return FeatureValue(1.0 / inv_ttc.v)
-    end
-end
-
 function changed_lanes_recently(rec::SceneRecord, roadway::Roadway,
         vehicle_index::Int, pastframe::Int = 0; lane_change_timesteps = 10,
         lane_change_heading_threshold = .1)
@@ -399,58 +304,58 @@ function executed_hard_brake(rec::SceneRecord, roadway::Roadway,
     return hard_brake
 end
 
-"""
-Overriding IDM track_longitudinal! in order to clamp accel in negative velocity
-situations.
-"""
-function AutomotiveDrivingModels.track_longitudinal!(
-        model::IntelligentDriverModel, scene::Scene, roadway::Roadway,
-        ego_index::Int, target_index::Int)
-    veh_ego = scene[ego_index]
-    v = veh_ego.state.v
+# """
+# Overriding IDM track_longitudinal! in order to clamp accel in negative velocity
+# situations.
+# """
+# function AutomotiveDrivingModels.track_longitudinal!(
+#         model::IntelligentDriverModel, scene::Scene, roadway::Roadway,
+#         ego_index::Int, target_index::Int)
+#     veh_ego = scene[ego_index]
+#     v = veh_ego.state.v
 
-    if target_index > 0
-        veh_target = scene[target_index]
+#     if target_index > 0
+#         veh_target = scene[target_index]
 
-        s_gap = get_frenet_relative_position(get_rear_center(veh_target),
-                                             veh_ego.state.posF.roadind, roadway).Δs
+#         s_gap = get_frenet_relative_position(get_rear_center(veh_target),
+#                                              veh_ego.state.posF.roadind, roadway).Δs
 
-        if s_gap > 0.0
-            Δv = veh_target.state.v - v
-            s_des = model.s_min + v*model.T - v*Δv / (2*sqrt(model.a_max*model.d_cmf))
-            v_ratio = model.v_des > 0.0 ? (v/model.v_des) : 1.0
-            model.a = model.a_max * (1.0 - v_ratio^model.δ - (s_des/s_gap)^2)
-        elseif s_gap > -veh_ego.def.length
-            model.a = -model.d_max
-        else
-            Δv = model.v_des - v
-            model.a = Δv*model.k_spd
-        end
+#         if s_gap > 0.0
+#             Δv = veh_target.state.v - v
+#             s_des = model.s_min + v*model.T - v*Δv / (2*sqrt(model.a_max*model.d_cmf))
+#             v_ratio = model.v_des > 0.0 ? (v/model.v_des) : 1.0
+#             model.a = model.a_max * (1.0 - v_ratio^model.δ - (s_des/s_gap)^2)
+#         elseif s_gap > -veh_ego.def.length
+#             model.a = -model.d_max
+#         else
+#             Δv = model.v_des - v
+#             model.a = Δv*model.k_spd
+#         end
 
-        if isnan(model.a)
+#         if isnan(model.a)
 
-            warn("IDM acceleration was NaN!")
-            if s_gap > 0.0
-                Δv = veh_target.state.v - v
-                s_des = model.s_min + v*model.T - v*Δv / (2*sqrt(model.a_max*model.d_cmf))
-                println("\tΔv: ", Δv)
-                println("\ts_des: ", s_des)
-                println("\tv_des: ", model.v_des)
-                println("\tδ: ", model.δ)
-                println("\ts_gap: ", s_gap)
-            elseif s_gap > -veh_ego.def.length
-                println("\td_max: ", model.d_max)
-            end
+#             warn("IDM acceleration was NaN!")
+#             if s_gap > 0.0
+#                 Δv = veh_target.state.v - v
+#                 s_des = model.s_min + v*model.T - v*Δv / (2*sqrt(model.a_max*model.d_cmf))
+#                 println("\tΔv: ", Δv)
+#                 println("\ts_des: ", s_des)
+#                 println("\tv_des: ", model.v_des)
+#                 println("\tδ: ", model.δ)
+#                 println("\ts_gap: ", s_gap)
+#             elseif s_gap > -veh_ego.def.length
+#                 println("\td_max: ", model.d_max)
+#             end
 
-            model.a = 0.0
-        end
-    else
-        # no lead vehicle, just drive to match desired speed
-        Δv = model.v_des - v
-        model.a = Δv*model.k_spd # predicted accel to match target speed
-    end
+#             model.a = 0.0
+#         end
+#     else
+#         # no lead vehicle, just drive to match desired speed
+#         Δv = model.v_des - v
+#         model.a = Δv*model.k_spd # predicted accel to match target speed
+#     end
 
-    low = v < 0. ? 0. : -model.d_max
-    model.a = clamp(model.a, low, model.a_max)
-    model
-end
+#     low = v < 0. ? 0. : -model.d_max
+#     model.a = clamp(model.a, low, model.a_max)
+#     model
+# end

@@ -31,15 +31,15 @@ type Dataset
         - filepath: filepath where to create HDF5 file
         - feature_dim: dimension of features
         - target_dim: dimension of targets
-        - max_num_samples: maximum possible samples over course of 
+        - max_num_samples: maximum possible samples over course of
             dataset gathering
         - chunk_dim: the dimension of the hdf5 chunk write sizes
         - init_file: whether to initialize the hdf5 file at construction
             set to false for parallel dataset gathering
     """
-    function Dataset(filepath::String, feature_dim::Int64, 
+    function Dataset(filepath::String, feature_dim::Int64,
             feature_timesteps::Int64, target_dim::Int64,
-            max_num_samples::Int64; chunk_dim::Int64 = 100, 
+            max_num_samples::Int64; chunk_dim::Int64 = 100,
             init_file::Bool = true)
         retval = new()
         retval.filepath = filepath
@@ -54,7 +54,7 @@ type Dataset
 
         # conditionally create h5 file in constructor
         # note that in the parallel case, creating the file here
-        # would require each individual process to reopen the file, 
+        # would require each individual process to reopen the file,
         # so delay file creation to update! in that case
         if init_file
             initialize!(retval)
@@ -76,12 +76,12 @@ function initialize!(dataset::Dataset)
     # create the file and sub-datasets
     h5file = h5open(dataset.filepath, "w")
     risk_dataset = g_create(h5file, "risk")
-    features = d_create(risk_dataset, "features", datatype(Float64), 
-                dataspace(dataset.feature_dim, dataset.feature_timesteps, 
-                dataset.max_num_samples), 
+    features = d_create(risk_dataset, "features", datatype(Float64),
+                dataspace(dataset.feature_dim, dataset.feature_timesteps,
+                dataset.max_num_samples),
                 "chunk", (dataset.feature_dim, dataset.feature_timesteps, dataset.chunk_dim))
-    targets = d_create(risk_dataset, "targets", datatype(Float64), 
-                dataspace(dataset.target_dim, dataset.max_num_samples), 
+    targets = d_create(risk_dataset, "targets", datatype(Float64),
+                dataspace(dataset.target_dim, dataset.max_num_samples),
                 "chunk", (dataset.target_dim, dataset.chunk_dim))
 
     # set the values in the dataset for easier access later
@@ -100,16 +100,16 @@ end
     - targets: targets to add, shape = (target_dim, num_samples)
     - seed: the random seed used to generate these features and targets
 """
-function update!(dataset::Dataset, features::Array{Float64}, 
+function AutomotiveDrivingModels.update!(dataset::Dataset, features::Array{Float64},
         targets::Array{Float64}, seed::Int64)
-    
-    # check for delayed initialization of the h5 file 
+
+    # check for delayed initialization of the h5 file
     # and initialize if not yet created (should occur
     # in the parallel case)
     if !isdefined(dataset, :file)
         initialize!(dataset)
     end
-    
+
     # the number of samples added each time may differ, so extract here
     num_samples = size(features, 3)
     s = dataset.next_idx
@@ -127,9 +127,9 @@ end
 
 """
 # Description:
-    - Finalize the dataset collection process by closing the file and 
+    - Finalize the dataset collection process by closing the file and
         setting the final size of the sub-datasets. This is necessary
-        because we do not know beforehand how many samples will be 
+        because we do not know beforehand how many samples will be
         added to the dataset.
 
 # Args:
@@ -137,10 +137,10 @@ end
 """
 function finalize!(dataset::Dataset)
     # reduce feature and target size
-    set_dims!(dataset.features, (dataset.feature_dim, dataset.feature_timesteps, 
+    set_dims!(dataset.features, (dataset.feature_dim, dataset.feature_timesteps,
         dataset.next_idx - 1))
     set_dims!(dataset.targets, (dataset.target_dim, dataset.next_idx - 1))
-    
+
     # add seeds and batch idxs only at the end
     d_write(dataset.file, "risk/batch_idxs", dataset.batch_idxs)
     d_write(dataset.file, "risk/seeds", dataset.seeds)
@@ -150,10 +150,10 @@ end
 
 """
 # Description:
-    - Function for aggregating a set of datasets into a single 
+    - Function for aggregating a set of datasets into a single
         dataset. Each dataset must have "feature", "target", "seeds",
-        and "batch_idxs" datasets. Note that aggregating hdf5 files 
-        may not be necessary since you can reference external datasets 
+        and "batch_idxs" datasets. Note that aggregating hdf5 files
+        may not be necessary since you can reference external datasets
         from a single hdf5 dataset. This is just a convenience
         to only deal with a single file.
 
@@ -161,10 +161,10 @@ end
     - input_filepaths: filepaths to datasets to aggregate
     - output_filepath: filepath to save aggregate dataset
 """
-function aggregate_datasets(input_filepaths::Vector{String}, 
+function aggregate_datasets(input_filepaths::Vector{String},
         output_filepath::String)
 
-    # compute aggregate size of dataset and feature and target 
+    # compute aggregate size of dataset and feature and target
     # size by iterating through the input files first
     num_features, num_targets, feature_timesteps = -1, -1, -1
     num_samples = 0
@@ -183,12 +183,12 @@ function aggregate_datasets(input_filepaths::Vector{String},
 
             # check that feature and target dims match across sets
             if num_proc_features != num_features
-                throw(ErrorException("not all proc datasets have 
+                throw(ErrorException("not all proc datasets have
                     the same target dim. This proc: $(num_proc_features)
                     previous procs: $(num_features). Filepath: $(filepath)"))
             end
             if num_proc_targets != num_targets
-                throw(ErrorException("not all proc datasets have 
+                throw(ErrorException("not all proc datasets have
                     the same target dim. This proc: $(num_proc_targets)
                     previous procs: $(num_targets). Filepath: $(filepath)"))
             end
@@ -200,9 +200,9 @@ function aggregate_datasets(input_filepaths::Vector{String},
     # set up aggregate dataset containers
     h5file = h5open(output_filepath, "w")
     risk_dataset = g_create(h5file, "risk")
-    feature_set = d_create(risk_dataset, "features", 
+    feature_set = d_create(risk_dataset, "features",
         datatype(Float64), dataspace(num_features, feature_timesteps, num_samples))
-    target_set = d_create(risk_dataset, "targets", 
+    target_set = d_create(risk_dataset, "targets",
         datatype(Float64), dataspace(num_targets, num_samples))
     seeds = Vector{Int64}()
     batch_idxs = Vector{Int64}()
@@ -228,7 +228,7 @@ function aggregate_datasets(input_filepaths::Vector{String},
         append!(batch_idxs, cur_batch_idxs)
     end
 
-    # close file 
+    # close file
     close(h5file)
 
     # write seeds and batch_idxs

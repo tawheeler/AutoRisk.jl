@@ -21,14 +21,11 @@ Base.srand(gen::BehaviorGenerator, seed) = error("srand not implemented for $(ty
     - gen: behavior generator to use
     - models: dict to populate
     - scene: scene that contains vehicles which correspond to the driver models
-    - seed: random seed to use in populating the models
 """
-function Base.rand(gen::BehaviorGenerator, models::Dict{Int, DriverModel}, scene::Scene)
-    srand(seed)
-    srand(gen.rng, seed)
+function Base.rand{D<:DriverModel}(gen::BehaviorGenerator, models::Dict{Int, D}, scene::Scene)
     empty!(models)
     for veh in scene.vehicles
-        params = rand(gen)
-        models[veh.def.id] = build_driver(params, gen.context, length(scene))
+        models[veh.def.id] = rand(gen)
     end
+    return models
 end

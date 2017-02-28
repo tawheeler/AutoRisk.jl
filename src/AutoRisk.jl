@@ -52,16 +52,16 @@ include("collection/dataset.jl")
 include("collection/dataset_collector.jl")
 
 
-# Display portion of AutoRisk may be unnecessary or unavailable in some
-# environments, so optionally include that here if possible
-try
-    @reexport using AutoViz
-    @reexport using Interact
-    # analysis
-    include("analysis/display.jl")
-catch e
-    println("Exception encountered in AutoRisk while trying to import display
-        libraries and functionality: $(e)")
-end
+# # Display portion of AutoRisk may be unnecessary or unavailable in some
+# # environments, so optionally include that here if possible
+# try
+#     @reexport using AutoViz
+#     @reexport using Interact
+#     # analysis
+#     include("analysis/display.jl")
+# catch e
+#     println("Exception encountered in AutoRisk while trying to import display
+#         libraries and functionality: $(e)")
+# end
 
 end # module

@@ -15,7 +15,7 @@ import AutomotiveDrivingModels:
     set_desired_speed!,
     observe!
 
-type DelayedDriver <: DriverModel{LatLonAccel, IntegratedContinuous}
+type DelayedDriver <: DriverModel{LatLonAccel}
     driver::DriverModel
     rec::SceneRecord
     reaction_time::Float64 # reaction time (time delay in responding) [s]
@@ -30,7 +30,6 @@ type DelayedDriver <: DriverModel{LatLonAccel, IntegratedContinuous}
 end
 
 get_name(::DelayedDriver) = "DelayedDriver"
-action_context(driver::DelayedDriver) = driver.driver.action_context
 set_desired_speed!(driver::DelayedDriver, v_des::Float64) = set_desired_speed!(
     driver.driver, v_des)
 function observe!(driver::DelayedDriver, scene::Scene, roadway::Roadway, egoid::Int)

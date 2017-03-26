@@ -125,11 +125,7 @@ function evaluate!(eval::Evaluator, scene::Scene,
     # extract features for all vehicles using scenes simulated so far
     pull_features!(eval.ext, eval.rec, roadway, models, eval.features,
         eval.feature_timesteps)
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> 2fb5d827bf66582fc5107e2140906f8649c54859
     # repeatedly simulate, starting from the final burn-in scene
     temp_scene = Scene(length(scene.vehicles))
     pastframe = 0 # first iteration, don't alter record

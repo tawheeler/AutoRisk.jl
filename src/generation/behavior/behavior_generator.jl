@@ -24,8 +24,8 @@ Base.srand(gen::BehaviorGenerator, seed) = error("srand not implemented for $(ty
 """
 function Base.rand{S,Def,I,D<:DriverModel}(gen::BehaviorGenerator, models::Dict{I, D}, scene::Frame{Entity{S,Def,I}})
     empty!(models)
-    for veh in scene
-        models[veh.id] = rand(gen)
+    for entity in scene
+        models[entity.id] = rand(gen)
     end
     return models
 end

@@ -6,17 +6,17 @@ function _pull_W_b_h(filepath::AbstractString, path::AbstractString)
     W_xu = h5read(filepath, joinpath(path, "W_xu:0"))::Matrix{Float32}
     W_xc = h5read(filepath, joinpath(path, "W_xc:0"))::Matrix{Float32}
     W_x = vcat(W_xr, W_xu, W_xc)
-    
+
     W_hr = h5read(filepath, joinpath(path, "W_hr:0"))::Matrix{Float32}
     W_hu = h5read(filepath, joinpath(path, "W_hu:0"))::Matrix{Float32}
     W_hc = h5read(filepath, joinpath(path, "W_hc:0"))::Matrix{Float32}
     W_h = vcat(W_hr, W_hu, W_hc)
-    
+
     b_r = h5read(filepath, joinpath(path, "b_r:0"))::Vector{Float32}
     b_u = h5read(filepath, joinpath(path, "b_u:0"))::Vector{Float32}
     b_c = h5read(filepath, joinpath(path, "b_c:0"))::Vector{Float32}
     b = vcat(b_r, b_u, b_c)
-    
+
     (W_x, W_h, b)
 end
 
@@ -28,20 +28,22 @@ end
 
 function load_gaussian_mlp_driver(
             filepath::AbstractString,
-            base_extractor::AbstractFeatureExtractor, 
-            iteration::Int=-1; 
+            base_extractor::AbstractFeatureExtractor,
+            iteration::Int=-1;
             gru_layer::Bool=true,
             bc_policy::Bool=false,
-            action_type::DataType=AccelTurnrate)
+            action_type::DataType=AccelTurnrate,
+            timestep::Float64=0.1,
+            )
 
     if iteration == -1 # load most recent
         fid = h5open(filepath)
         for val in keys(read(fid))
-            i = 0 
+            i = 0
             try
                 i = parse(Int, match(r"\d+", val).match)
             catch
-            end 
+            end
             iteration = max(iteration, i)
         end
     end
@@ -61,7 +63,7 @@ function load_gaussian_mlp_driver(
             layers = layers[1:end-1]
         end
     end
-    
+
 
     W, b = _pull_W_b(filepath, joinpath(basepath, layers[1]))
 
@@ -132,6 +134,6 @@ function load_gaussian_mlp_driver(
     feature_std = vec(h5read(filepath, "initial_obs_std")[1:length(base_extractor)])
     extractor = NormalizingExtractor(feature_means, feature_std, base_extractor)
 
-    return GaussianMLPDriver(action_type, net, extractor, IntegratedContinuous(0.1, 1),
+    return GaussianMLPDriver(action_type, net, extractor, timestep,
                         input = :input, output = :output, Σ = Σ)
 end

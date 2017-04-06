@@ -3,9 +3,9 @@
 
 function test_delayed_idm()
     # set up a scene with two vehicles in following pattern
-    context = IntegratedContinuous(.1, 1)
+    timestep = 0.1
     num_veh = 2
-    
+
     roadway = gen_straight_roadway(1)
 
     scene = Scene(num_veh)
@@ -31,16 +31,16 @@ function test_delayed_idm()
     # simulate the scene with 0 second time delay idm and compare with normal
     # 0 second delay simulation
     models = Dict{Int, DriverModel}()
-    mlon = DelayedIntelligentDriverModel(context.Δt, t_d = 0.0)
-    models[1] = Tim2DDriver(context, mlon = mlon)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = DelayedIntelligentDriverModel(timestep, t_d = 0.0)
+    models[1] = Tim2DDriver(timestep, mlon = mlon)
+    models[2] = Tim2DDriver(timestep, mlon = mlon)
     simulate!(no_delay_init_scene, models, roadway, rec, T)
 
     # idm simulation
     models = Dict{Int, DriverModel}()
     mlon = IntelligentDriverModel()
-    models[1] = Tim2DDriver(context, mlon = mlon)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    models[1] = Tim2DDriver(timestep, mlon = mlon)
+    models[2] = Tim2DDriver(timestep, mlon = mlon)
     simulate!(idm_init_scene, models, roadway, rec, T)
 
     # check vehicle states
@@ -59,15 +59,15 @@ end
 
 function test_delayed_idm_collision()
     # set up a scene with two vehicles in following pattern
-    context = IntegratedContinuous(.1, 1)
+    timestep = 0.1
     num_veh = 2
-    
+
     roadway = gen_straight_roadway(1)
 
     scene = Scene(num_veh)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
     road_pos = 10.
-    
+
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, 0.)
     veh_state = move_along(veh_state, roadway, road_pos)
     veh_def = VehicleDef(1, AgentClass.CAR, 5., 2.)
@@ -87,9 +87,9 @@ function test_delayed_idm_collision()
     # simulate delayed idm to confirm collision
     models = Dict{Int, DriverModel}()
     mstatic = StaticLongitudinalDriver(0.)
-    mlon = DelayedIntelligentDriverModel(context.Δt, t_d = 0.2)
-    models[1] = Tim2DDriver(context, mlon = mstatic)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = DelayedIntelligentDriverModel(timestep, t_d = 0.2)
+    models[1] = Tim2DDriver(timestep, mlon = mstatic)
+    models[2] = Tim2DDriver(timestep, mlon = mlon)
     simulate!(with_delay_init_scene, models, roadway, rec, T)
     delayed_idm_in_collision = convert(Float64, get(IS_COLLIDING, rec, roadway, 2))
 
@@ -98,8 +98,8 @@ function test_delayed_idm_collision()
     models = Dict{Int, DriverModel}()
     mstatic = StaticLongitudinalDriver(0.)
     mlon = IntelligentDriverModel()
-    models[1] = Tim2DDriver(context, mlon = mstatic)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    models[1] = Tim2DDriver(timestep, mlon = mstatic)
+    models[2] = Tim2DDriver(timestep, mlon = mlon)
     simulate!(idm_init_scene, models, roadway, rec, T)
     idm_in_collision = convert(Float64, get(IS_COLLIDING, rec, roadway, 2))
 

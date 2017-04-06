@@ -1,36 +1,32 @@
-export 
+export
     DelayedDriver,
     get_name,
-    action_context
     set_desired_speed!,
     observe!,
     rand,
     pdf,
     logpdf
 
-import AutomotiveDrivingModels: 
-    LongitudinalDriverModel, 
+import AutomotiveDrivingModels:
+    LaneFollowingDriver,
     get_name,
-    action_context
     set_desired_speed!,
     observe!
 
-type DelayedDriver <: DriverModel{LatLonAccel, IntegratedContinuous}
+type DelayedDriver <: DriverModel{LatLonAccel}
     driver::DriverModel
     rec::SceneRecord
     reaction_time::Float64 # reaction time (time delay in responding) [s]
     pastframe::Int # index into the record of the scene to observe
 
-    function DelayedDriver(driver::DriverModel; reaction_time::Float64 = 0.5)
-        Δt = driver.action_context.Δt
-        n_scenes = Int(ceil(reaction_time / Δt)) + 1
-        rec = SceneRecord(n_scenes, Δt)
+    function DelayedDriver(driver::DriverModel, timestep::Float64; reaction_time::Float64 = 0.5)
+        n_scenes = Int(ceil(reaction_time / timestep)) + 1
+        rec = SceneRecord(n_scenes, timestep)
         new(driver, rec, reaction_time, -(n_scenes - 1))
     end
 end
 
 get_name(::DelayedDriver) = "DelayedDriver"
-action_context(driver::DelayedDriver) = driver.driver.action_context
 set_desired_speed!(driver::DelayedDriver, v_des::Float64) = set_desired_speed!(
     driver.driver, v_des)
 function observe!(driver::DelayedDriver, scene::Scene, roadway::Roadway, egoid::Int)

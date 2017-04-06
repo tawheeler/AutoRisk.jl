@@ -7,11 +7,11 @@ include("../../../scripts/collection/heuristic_dataset_config.jl")
 Test MOBIL when exiting a curve:
     - one MOBIL vehicle in the inner lane about to exit a curve
     - one static vehicle slower than MOBIL in front in the same lane
-    - one static vehicle at the same speed traveling slight behind in 
+    - one static vehicle at the same speed traveling slight behind in
         the other lane
 =#
 function test_mobil_when_exiting_curve()
-    context = IntegratedContinuous(.1, 1)
+    timestep = 0.1
     num_veh = 3
     # two-lane stadium
     roadway = gen_stadium_roadway(2, length = 400.0, radius = 100.0)
@@ -40,9 +40,9 @@ function test_mobil_when_exiting_curve()
     # simulate the scene with 0 second time delay idm and compare with normal
     # 0 second delay simulation
     models = Dict{Int, DriverModel}()
-    mlon = DelayedIntelligentDriverModel(context.Δt, t_d = 0.0)
-    models[1] = Tim2DDriver(context, mlon = mlon)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    mlon = DelayedIntelligentDriverModel(timestep, t_d = 0.0)
+    models[1] = Tim2DDriver(timestep, mlon = mlon)
+    models[2] = Tim2DDriver(timestep, mlon = mlon)
     simulate!(no_delay_init_scene, models, roadway, rec, T)
 end
 

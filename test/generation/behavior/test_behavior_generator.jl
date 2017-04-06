@@ -11,8 +11,8 @@ function test_build_driver()
     σ = 0.
     k_spd = 1.
     δ = 2.
-    T = 3. 
-    v_des = 4. 
+    T = 3.
+    v_des = 4.
     s_min = 5.
     a_max = 6.
     d_cmf = 7.
@@ -25,9 +25,9 @@ function test_build_driver()
     kd = 12.
     lat_params = LateralParams(σ, kp, kd)
     params = BehaviorParams(idm_params, mobil_params, lat_params)
-    context = IntegratedContinuous(.1, 1)
+    timestep = 0.1
     num_vehicles = 13
-    driver = build_driver(params, context, num_vehicles)
+    driver = build_driver(params, timestep, num_vehicles)
     @test driver.mlon.k_spd == k_spd
     @test driver.mlon.δ == δ
     @test driver.mlon.v_des == v_des
@@ -37,7 +37,7 @@ function test_build_driver()
     @test driver.mlane.politeness == politeness
     @test driver.mlane.advantage_threshold == advantage_threshold
     @test driver.mlane.safe_decel == safe_decel
-    @test driver.mlat.kp == kp 
+    @test driver.mlat.kp == kp
     @test driver.mlat.kd == kd
 end
 
@@ -48,8 +48,8 @@ function test_behavior_reset()
     lat_params = LateralParams(11., 12., 13.)
     params = [BehaviorParams(idm_params, mobil_params, lat_params)]
     weights = WeightVec([1.])
-    context = IntegratedContinuous(.1, 1)
-    gen = PredefinedBehaviorGenerator(context, params, weights)
+    timestep = 0.1
+    gen = PredefinedBehaviorGenerator(timestep, params, weights)
     models = Dict{Int, DriverModel}()
     scene = Scene(1)
     seed = 1

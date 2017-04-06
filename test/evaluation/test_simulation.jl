@@ -7,13 +7,13 @@
 
 function test_simulate()
     # set up and sim a scene with two vehicles w/ constant vel
-    context = IntegratedContinuous(.1, 1)
+    timestep = 0.1
     num_veh = 2
-    
+
     models = Dict{Int, DriverModel}()
     mlon = StaticLongitudinalDriver(0.)
-    models[1] = Tim2DDriver(context, mlon = mlon)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    models[1] = Tim2DDriver(timestep, mlon = mlon)
+    models[2] = Tim2DDriver(timestep, mlon = mlon)
 
     roadway = gen_straight_roadway(1)
 

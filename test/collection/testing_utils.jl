@@ -10,9 +10,9 @@ function build_debug_dataset_collector(;
         max_base_speed = 40.,
         min_vehicle_length = 3.,
         max_vehicle_length = 7.,
-        min_vehicle_width = 1., 
+        min_vehicle_width = 1.,
         max_vehicle_width = 3.,
-        min_init_dist = 10., 
+        min_init_dist = 10.,
         max_init_dist = 30.,
         rng = MersenneTwister(1),
         num_lanes = 3,
@@ -29,29 +29,29 @@ function build_debug_dataset_collector(;
     max_num_samples = num_samples * max_num_veh
 
     # roadway gen
-    roadway = gen_stadium_roadway(num_lanes, length = roadway_length, 
+    roadway = gen_stadium_roadway(num_lanes, length = roadway_length,
         radius = roadway_radius)
     roadway_gen = StaticRoadwayGenerator(roadway)
 
     # scene gen
     scene = Scene(max_num_veh)
     scene_gen = HeuristicSceneGenerator(
-        min_num_veh, 
-        max_num_veh, 
+        min_num_veh,
+        max_num_veh,
         min_base_speed,
         max_base_speed,
         min_vehicle_length,
         max_vehicle_length,
-        min_vehicle_width, 
+        min_vehicle_width,
         max_vehicle_width,
-        min_init_dist, 
+        min_init_dist,
         max_init_dist,
         rng)
 
     params = [get_aggressive_behavior_params(lon_σ = lon_σ, lat_σ = lat_σ)]
     weights = WeightVec([1.])
-    context = IntegratedContinuous(.1, 1)
-    behavior_gen = PredefinedBehaviorGenerator(context, params, weights)
+    timestep = 0.1
+    behavior_gen = PredefinedBehaviorGenerator(timestep, params, weights)
     models = Dict{Int, DriverModel}()
 
     # evaluator
@@ -67,7 +67,7 @@ function build_debug_dataset_collector(;
     targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
     agg_targets::Array{Float64} = Array{Float64}(target_dim, max_num_veh)
     rng::MersenneTwister = MersenneTwister(1)
-    eval = MonteCarloEvaluator(ext, num_runs, context, prime_time, sampling_time,
+    eval = MonteCarloEvaluator(ext, num_runs, timestep, prime_time, sampling_time,
         veh_idx_can_change, rec, features, targets, agg_targets, rng)
 
     # dataset

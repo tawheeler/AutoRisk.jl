@@ -1,11 +1,10 @@
 export
     GaussianMLPDriver,
     get_name,
-    action_context,
     reset_hidden_state!,
     observe!
 
-type GaussianMLPDriver{A<:DriveAction, F<:Real, G<:Real, E<:AbstractFeatureExtractor, M<:MvNormal} <: DriverModel{A, IntegratedContinuous}
+type GaussianMLPDriver{A, F<:Real, G<:Real, E<:AbstractFeatureExtractor, M<:MvNormal} <: DriverModel{A}
     net::ForwardNet
     rec::SceneRecord
     pass::ForwardPass
@@ -13,24 +12,23 @@ type GaussianMLPDriver{A<:DriveAction, F<:Real, G<:Real, E<:AbstractFeatureExtra
     output::Vector{G}
     extractor::E
     mvnormal::M
-    context::IntegratedContinuous
     features::Array{Float64}
 
     a_hi::Float64
     a_lo::Float64
     ω_hi::Float64
-    ω_lo::Float64   
+    ω_lo::Float64
 end
 
 _get_Σ_type{Σ,μ}(mvnormal::MvNormal{Σ,μ}) = Σ
-function GaussianMLPDriver{A <: DriveAction}(::Type{A}, 
-        net::ForwardNet, 
-        extractor::AbstractFeatureExtractor, 
-        context::IntegratedContinuous;
+function GaussianMLPDriver{A}(::Type{A},
+        net::ForwardNet,
+        extractor::AbstractFeatureExtractor,
+        timestep::Float64;
         input::Symbol = :input,
         output::Symbol = :output,
         Σ::Union{Real, Vector{Float64}, Matrix{Float64},  Distributions.AbstractPDMat} = 0.1,
-        rec::SceneRecord = SceneRecord(2, context.Δt),
+        rec::SceneRecord = SceneRecord(2, timestep),
         a_hi::Float64 = 3.,
         a_lo::Float64 = -5.,
         ω_hi::Float64 = .01,
@@ -44,7 +42,6 @@ function GaussianMLPDriver{A <: DriveAction}(::Type{A},
     GaussianMLPDriver{A, eltype(input_vec), eltype(output), typeof(extractor), typeof(mvnormal)}(net, rec, pass, input_vec, output, extractor, mvnormal, context, features, a_hi, a_lo, ω_hi, ω_lo)
 end
 AutomotiveDrivingModels.get_name(::GaussianMLPDriver) = "GaussianMLPDriver"
-AutomotiveDrivingModels.action_context(model::GaussianMLPDriver) = model.context
 
 function AutomotiveDrivingModels.reset_hidden_state!(model::GaussianMLPDriver)
     empty!(model.rec)
@@ -53,8 +50,8 @@ end
 
 function AutomotiveDrivingModels.observe!{A,F,G,E,P}(
         model::GaussianMLPDriver{A,F,G,E,P},
-        scene::Scene, 
-        roadway::Roadway, 
+        scene::Scene,
+        roadway::Roadway,
         egoid::Int)
     update!(model.rec, scene)
     vehicle_index = get_index_of_first_vehicle_with_id(scene, egoid)

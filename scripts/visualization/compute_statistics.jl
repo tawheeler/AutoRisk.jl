@@ -40,7 +40,7 @@ function compute_heuristic_mean_travel_distance(
     total_dist = 0
     for (sidx, seed) in enumerate(seeds)
         reset!(col, seed)
-        actions = Array(DriveAction, length(col.scene))
+        actions = Array(Any, length(col.scene))
         seed_dist = 0
         for t in 0:col.eval.rec.timestep:(T - col.eval.rec.timestep)
             copy!(prev_scene, col.scene)

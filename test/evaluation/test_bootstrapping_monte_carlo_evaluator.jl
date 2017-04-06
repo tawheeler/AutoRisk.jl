@@ -6,7 +6,7 @@
 
 function test_bootstrapping_monte_carlo_evaluator_debug()
     # add three vehicles and specifically check neighbor features
-    context = IntegratedContinuous(.1, 1)
+    timestep = 0.1
     num_veh = 3
     # one lane roadway
     roadway = gen_straight_roadway(1, 500.)
@@ -16,7 +16,7 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
 
     # 1: first vehicle, moving the fastest
     mlon = StaticLongitudinalDriver(5.)
-    models[1] = Tim2DDriver(context, mlon = mlon)
+    models[1] = Tim2DDriver(timestep, mlon = mlon)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
     base_speed = 2.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
@@ -25,7 +25,7 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
 
     # 2: second vehicle, in the middle, moving at intermediate speed
     mlon = StaticLongitudinalDriver(1.)
-    models[2] = Tim2DDriver(context, mlon = mlon)
+    models[2] = Tim2DDriver(timestep, mlon = mlon)
     base_speed = 1.
     road_pos = 10.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
@@ -35,7 +35,7 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
 
     # 3: thrid vehicle, in the front, accelerating backward
     mlon = StaticLongitudinalDriver(-4.5)
-    models[3] = Tim2DDriver(context, mlon = mlon)
+    models[3] = Tim2DDriver(timestep, mlon = mlon)
     base_speed = 0.
     road_pos = 200.
     veh_state = VehicleState(Frenet(road_idx, roadway), roadway, base_speed)
@@ -61,15 +61,15 @@ function test_bootstrapping_monte_carlo_evaluator_debug()
     push!(prediction_model.biases, zeros(Float64, (1, NUM_TARGETS)))
 
     ext = MultiFeatureExtractor()
-    eval = BootstrappingMonteCarloEvaluator(ext, num_runs, context, prime_time,
+    eval = BootstrappingMonteCarloEvaluator(ext, num_runs, timestep, prime_time,
         sampling_time, veh_idx_can_change, rec, features, targets, agg_targets,
         prediction_model, rng)
 
     evaluate!(eval, scene, models, roadway, 1)
 
     # note that the bootstrapping model will output ones for everything
-    # which means that everything that's already collided will have normal 
-    # values (vehicles 1 and 2), and everything that hasn't collided will 
+    # which means that everything that's already collided will have normal
+    # values (vehicles 1 and 2), and everything that hasn't collided will
     # have all ones (vehicle 3)
     @test eval.agg_targets[1:NUM_TARGETS, 1] == [0.0, 0.0, 1.0, 0.0, 1.0]
     @test eval.agg_targets[1:NUM_TARGETS, 2] == [0.0, 1.0, 0.0, 0.0, 0.0]

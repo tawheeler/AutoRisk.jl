@@ -17,8 +17,8 @@ function test_predefined_behavior_generator()
     params = [BehaviorParams(idm_params, mobil_params, lat_params),
         BehaviorParams(idm_params, mobil_params, lat_params_2)]
     weights = WeightVec([.5, .5])
-    context = IntegratedContinuous(.1, 1)
-    gen = PredefinedBehaviorGenerator(context, params, weights)
+    timestep = 0.1
+    gen = PredefinedBehaviorGenerator(timestep, params, weights)
 
     srand(1)
     samp_params = rand(gen)
@@ -29,23 +29,23 @@ function test_predefined_behavior_generator()
 end
 
 function test_predefined_behavior_generator_non_determinism()
-    
+
     # nondeterministic case
     params = get_normal_behavior_params(lon_σ = 1., lat_σ = .1)
-    context = IntegratedContinuous(.1, 1)
-    num_vehicles = 1 
-    driver = build_driver(params, context, num_vehicles)
+    timestep = 0.1
+    num_vehicles = 1
+    driver = build_driver(params, timestep, num_vehicles)
 
     roadway = gen_straight_roadway(1)
     scene = Scene(1)
     road_idx = RoadIndex(proj(VecSE2(0.0, 0.0, 0.0), roadway))
-    veh_state = VehicleState(Frenet(road_idx, roadway), 
+    veh_state = VehicleState(Frenet(road_idx, roadway),
         roadway, 10.)
     veh_def = VehicleDef(1, AgentClass.CAR, 1., 1.)
     veh = Vehicle(veh_state, veh_def)
     push!(scene, veh)
     observe!(driver, scene, roadway, 1)
-    
+
     srand(1)
     act_1 = rand(driver)
 
@@ -66,7 +66,7 @@ function test_predefined_behavior_generator_non_determinism()
 
     # deterministic case
     params = get_normal_behavior_params()
-    driver = build_driver(params, context, num_vehicles)
+    driver = build_driver(params, timestep, num_vehicles)
     observe!(driver, scene, roadway, 1)
 
     srand(1)
@@ -88,17 +88,17 @@ function test_uniform_behavior_generator()
     mobil_params = MOBILParams(collect(9.:11.)...)
     lat_params = LateralParams(12., 13., 14.)
     max_params = BehaviorParams(idm_params, mobil_params, lat_params)
-    context = IntegratedContinuous(.1, 1)
-    gen = UniformBehaviorGenerator(context, min_params, min_params)
+    timestep = 0.1
+    gen = UniformBehaviorGenerator(timestep, min_params, min_params)
     srand(1)
     samp_params_min = rand(gen)
     @test samp_params_min == min_params
 
-    gen = UniformBehaviorGenerator(context, max_params, max_params)
+    gen = UniformBehaviorGenerator(timestep, max_params, max_params)
     samp_params_max = rand(gen)
     @test samp_params_max == max_params
 
-    gen = UniformBehaviorGenerator(context, min_params, max_params)
+    gen = UniformBehaviorGenerator(timestep, min_params, max_params)
     samp_params = rand(gen)
     @test samp_params != samp_params_min
     @test samp_params != samp_params_max

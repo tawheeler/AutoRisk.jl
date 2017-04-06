@@ -9,9 +9,10 @@ using Reexport
 @reexport using ForwardNets
 @reexport using HDF5
 
-import AutomotiveDrivingModels: simulate!, update!, reset!, observe!, pull_features!
+import AutomotiveDrivingModels: simulate!, update!, observe!, pull_features!
 import Base: display, show, rand, ==
 import Distributions: rand, pdf, logpdf
+import StatsBase: WeightVec
 
 # utils
 include("utils/automotive.jl")
@@ -56,7 +57,7 @@ include("collection/dataset.jl")
 include("collection/dataset_collector.jl")
 
 
-# Display portion of AutoRisk may be unnecessary or unavailable in some 
+# Display portion of AutoRisk may be unnecessary or unavailable in some
 # environments, so optionally include that here if possible
 try
     @reexport using AutoViz

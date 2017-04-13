@@ -9,7 +9,7 @@ export
     logpdf
 
 import AutomotiveDrivingModels:
-    LongitudinalDriverModel,
+    LaneFollowingDriver,
     get_name,
     action_context
     set_desired_speed!,

@@ -6,7 +6,6 @@ export
     straight_roadway_area,
     get_total_roadway_area,
     get_roadway_type,
-    inverse_ttc_to_ttc,
     push_forward_records!,
     executed_hard_brake
 
@@ -107,8 +106,7 @@ end
 
 ### Vehicle
 function Base.:(==)(vd1::VehicleDef, vd2::VehicleDef)
-    return (vd1.id == vd2.id
-            && vd1.class == vd2.class
+    return (   vd1.class == vd2.class
             && vd1.length == vd2.length
             && vd1.width == vd2.width)
 end

@@ -9,28 +9,28 @@ const NUM_TARGETS = 5
 
 function runtests()
     # utils
-    println("\n### utils ###")
-    println("test_utils.jl")
-    include("utils/test_utils.jl")
-    println("test_automotive.jl")
-    include("utils/test_automotive.jl")
+    # println("\n### utils ###")
+    # println("test_utils.jl")
+    # include("utils/test_utils.jl")
+    # println("test_automotive.jl")
+    # include("utils/test_automotive.jl")
 
     # extraction
-    println("\n### extraction ###")
-    println("test_feature_extractors.jl")
-    include("extraction/test_feature_extractors.jl")
-    println("test_multi_feature_extractor.jl")
-    include("extraction/test_multi_feature_extractor.jl")
-    println("test_dataset_extraction.jl")
-    include("extraction/test_dataset_extraction.jl")
+    # println("\n### extraction ###")
+    # println("test_feature_extractors.jl")
+    # include("extraction/test_feature_extractors.jl")
+    # println("test_multi_feature_extractor.jl")
+    # include("extraction/test_multi_feature_extractor.jl")
+    # println("test_dataset_extraction.jl")
+    # include("extraction/test_dataset_extraction.jl")
 
     # generation
     println("\n### generation ###")
     ## scene
-    println("test_heuristic_scene_generator.jl")
-    include("generation/scene/test_heuristic_scene_generator.jl")
+    # println("test_heuristic_scene_generator.jl")
+    # include("generation/scene/test_heuristic_scene_generator.jl")
     ## behavior
-    # println("test_behavior_generator.jl")
+    println("test_behavior_generator.jl")
     # include("generation/behavior/test_behavior_generator.jl")
     # println("test_heuristic_behavior_generators.jl")
     # include("generation/behavior/test_heuristic_behavior_generators.jl")
@@ -40,11 +40,11 @@ function runtests()
     # include("generation/behavior/test_delayed_driver_model.jl")
 
     # evaluation
-    println("\n### evaluation ###")
-    println("test_simulation.jl")
-    include("evaluation/test_simulation.jl")
-    println("test_monte_carlo_evaluator.jl")
-    include("evaluation/test_monte_carlo_evaluator.jl")
+    # println("\n### evaluation ###")
+    # println("test_simulation.jl")
+    # include("evaluation/test_simulation.jl")
+    # println("test_monte_carlo_evaluator.jl")
+    # include("evaluation/test_monte_carlo_evaluator.jl")
 
     # collection
     # println("\n### collection ###")

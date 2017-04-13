@@ -14,15 +14,15 @@ import Base: display, show, rand, ==
 import Distributions: rand, pdf, logpdf
 
 # utils
-include("utils/automotive.jl")
-include("utils/flags.jl")
-include("utils/utils.jl")
+# include("utils/automotive.jl")
+# include("utils/flags.jl")
+# include("utils/utils.jl")
 
 # extraction
-include("extraction/lidar_sensors.jl")
-include("extraction/feature_extractors.jl")
-include("extraction/multi_feature_extractor.jl")
-include("extraction/dataset_extraction.jl")
+# include("extraction/lidar_sensors.jl")
+# include("extraction/feature_extractors.jl")
+# include("extraction/multi_feature_extractor.jl")
+# include("extraction/dataset_extraction.jl")
 
 # generation
 ## roadway
@@ -30,26 +30,26 @@ include("generation/roadway/roadway_generator.jl")
 
 ## scene
 include("generation/scene/scene_generator.jl")
-include("generation/scene/heuristic_scene_generator.jl")
-include("generation/scene/dataset_scene_generator.jl")
+# include("generation/scene/heuristic_scene_generator.jl")
+# include("generation/scene/dataset_scene_generator.jl")
 
 ## behavior
 # include("generation/behavior/parameters.jl")
 include("generation/behavior/behavior_generator.jl")
 # include("generation/behavior/heuristic_behavior_generators.jl")
-include("generation/behavior/delayed_intelligent_driver_model.jl")
-include("generation/behavior/delayed_driver_model.jl")
+# include("generation/behavior/delayed_intelligent_driver_model.jl")
+# include("generation/behavior/delayed_driver_model.jl")
 # include("generation/behavior/load_policy.jl")
 # include("generation/behavior/learned_behavior_generators.jl")
 # include("generation/behavior/gaussian_mlp_driver.jl")
 
 # evaluation
-include("evaluation/simulation.jl")
-include("evaluation/monte_carlo_evaluator.jl")
+# include("evaluation/simulation.jl")
+# include("evaluation/monte_carlo_evaluator.jl")
 
 # collection
-include("collection/dataset.jl")
-include("collection/dataset_collector.jl")
+# include("collection/dataset.jl")
+# include("collection/dataset_collector.jl")
 
 
 # # Display portion of AutoRisk may be unnecessary or unavailable in some
